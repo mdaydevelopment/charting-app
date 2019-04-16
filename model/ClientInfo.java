@@ -1,4 +1,4 @@
-package Model;
+package model;
 /**
  * client info class for charting app
  * @author: Michael Day

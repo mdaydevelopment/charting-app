@@ -1,10 +1,10 @@
-package Driver;
+package driver;
 import java.sql.*;
 import java.util.LinkedList;
 
-import Database.DBManager;
-import Model.Client;
-import Model.Session;
+import database.DBManager;
+import model.Client;
+import model.Session;
 
 public class TestDriver {
     public static void main(String[] args) {

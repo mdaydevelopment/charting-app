@@ -1,4 +1,4 @@
-package Database;
+package database;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -11,12 +11,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import Model.Client;
-import Model.ClientCard;
-import Model.ClientCondition;
-import Model.ClientInfo;
-import Model.Physician;
-import Model.Session;
+import model.Client;
+import model.ClientCard;
+import model.ClientCondition;
+import model.ClientInfo;
+import model.Physician;
+import model.Session;
 
 public class DBManager {
     private Connection c;

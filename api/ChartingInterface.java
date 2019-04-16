@@ -1,4 +1,4 @@
-package API;
+package api;
 
 import java.sql.Date;
 
@@ -11,12 +11,12 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Queue;
 
-import Database.DBManager;
-import Model.Client;
-import Model.ClientCard;
-import Model.ClientCondition;
-import Model.ClientInfo;
-import Model.Session;
+import database.DBManager;
+import model.Client;
+import model.ClientCard;
+import model.ClientCondition;
+import model.ClientInfo;
+import model.Session;
 
 public class ChartingInterface {
 	private DBManager db;
