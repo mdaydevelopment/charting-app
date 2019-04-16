@@ -25,6 +25,7 @@ public class ClientInfo {
     private ArrayList<ClientCondition> conds;
 
     public ClientInfo() {
+    	this.cInfoID = -1;
         conds = new ArrayList<ClientCondition>();
     }
 
@@ -172,23 +173,4 @@ public class ClientInfo {
 
 }
 
-/*
-            sql = "CREATE TABLE client_info "
-                        +"(cinfo_id             INTEGER           PRIMARY KEY, "
-                        +"client_id             INT               NOT NULL, "
-                        +"date                  DATE              NOT NULL, "
-                        +"street                VARCHAR(200), "
-                        +"city                  VARCHAR(100), "
-                        +"state                 CHAR(2), "
-                        +"zip                   CHAR(5), "
-                        +"phone                 CHAR(10), "
-                        +"email                 VARCHAR(254), "
-                        +"occupation            VARCHAR(75), "
-                        +"physician_id          INT, "
-                        +"accidents_surgeries   TEXT, "
-                        +"allergies             TEXT, "
-                        +"repetitive_risk       TEXT, "
-                        +"FOREIGN KEY (client_id) REFERENCES client (client_id), "
-                        +"FOREIGN KEY (physician_id) REFERENCES physician (physician_id)"
-                        +");";
-*/
+

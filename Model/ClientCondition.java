@@ -31,4 +31,10 @@ public class ClientCondition {
     public void setConditionDesc(String cd) {
         this.conditionDesc = cd;
     }
+
+	@Override
+	public String toString() {
+		return "ClientCondition [conditionID=" + conditionID + ", conditionDesc=" + conditionDesc + "]";
+	}
+
 }

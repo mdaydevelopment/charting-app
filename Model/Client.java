@@ -10,7 +10,9 @@ public class Client {
     private Date lastContact;
     private boolean ignore;
 
-    public Client() {}
+    public Client() {
+    	this.clientID = -1;
+    }
 
     public Client(int id, String fn, String ln, Date dob, int rb) {
         this.clientID = id;
@@ -88,16 +90,12 @@ public class Client {
         this.ignore = i;
     }
 
-    @Override
-    public String toString() {
-        return "Client{clientId=" + clientID
-             + " fName=" + fName
-             + " lName=" + lName
-             + " dob=" + dob
-             + " referredBy= " + referredBy
-             + " lastContact=" + lastContact
-             + "}";
-    }
+	@Override
+	public String toString() {
+		return "Client [clientID=" + clientID + ", fName=" + fName + ", lName=" + lName + ", dob=" + dob
+				+ ", referredBy=" + referredBy + ", lastContact=" + lastContact + ", ignore=" + ignore + "]";
+	}
+
 }
 
 

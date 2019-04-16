@@ -57,12 +57,12 @@ public class Physician {
     public void setPhone(String po) {
         this.phone = po;
     }
+
+	@Override
+	public String toString() {
+		return "Physician [physicianID=" + physicianID + ", fName=" + fName + ", lName=" + lName + ", phone=" + phone
+				+ "]";
+	}
+
 }
 
-/*
-            sql = "CREATE TABLE physician "
-                        +"(physician_id         INTEGER           PRIMARY KEY, "
-                        +"f_name                VARCHAR(35), "
-                        +"l_name                VARCHAR(35)       NOT NULL, "
-                        +"phone                 CHAR(10)"
- */

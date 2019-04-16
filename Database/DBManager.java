@@ -101,7 +101,8 @@ public class DBManager {
             + "ON c.client_id = s.client_id "
             + "WHERE c.last_contact < "
                 + "(SELECT date('now', '-2 days')) "
-            + "AND c.last_contact <= s.lasts";
+            + "AND c.last_contact <= s.lasts "
+            + "ORDER BY c.last_contact";
         rs = stmt.executeQuery(sql);
         ClientCard nc;
         while (rs.next()) {
@@ -125,7 +126,7 @@ public class DBManager {
         return newQueue;
     }
 
-    public void insertClient(Client cl) throws Exception {
+    public int insertClient(Client cl) throws Exception {
         sql = "INSERT INTO client "
             +"(f_name, l_name, dob, referred_by, last_contact, ignore) "
             + "VALUES (?, ?, ?, ?, ?, ?)";
@@ -149,6 +150,7 @@ public class DBManager {
             pstmt.setInt(6, 0);
         }
         pstmt.executeUpdate();
+        return getLast();
     }
 
     public void replaceClient(Client cl) throws Exception {
@@ -221,7 +223,7 @@ public class DBManager {
         pstmt.executeUpdate();
     }
 
-    public void insertPhysician(Physician p) throws Exception {
+    public int insertPhysician(Physician p) throws Exception {
         sql = "INSERT INTO physician "
             +"(f_name, l_name, phone) "
             + "VALUES (?, ?, ?)";
@@ -230,6 +232,7 @@ public class DBManager {
         pstmt.setString(2, p.getLName());
         pstmt.setString(3, p.getPhone());
         pstmt.executeUpdate();
+        return getLast();
     }
 
     public void replacePhysician(Physician p) throws Exception {
@@ -255,7 +258,7 @@ public class DBManager {
         return np;
     }
 
-    public void insertClientInfo(ClientInfo ci) throws Exception {
+    public int insertClientInfo(ClientInfo ci) throws Exception {
         sql = "INSERT INTO client_info "
             +"(client_id, date, street, city, state, zip, phone, email, occupation, "
             +"physician_id, accidents_surgeries, allergies, repetitive_risk) "
@@ -274,7 +277,11 @@ public class DBManager {
         pstmt.setString(7, ci.getPhone());
         pstmt.setString(8, ci.getEmail());
         pstmt.setString(9, ci.getOccupation());
-        pstmt.setInt(10, ci.getPhysicianID());
+        if (ci.getPhysicianID() != -1) {
+        	pstmt.setInt(10, ci.getPhysicianID());
+        } else {
+        	pstmt.setNull(10, Types.INTEGER);
+        }
         pstmt.setString(11, ci.getAcdntSgrs());
         pstmt.setString(12, ci.getAllergies());
         pstmt.setString(13, ci.getRepRisk());
@@ -290,6 +297,7 @@ public class DBManager {
             pstmt.setString(3, cond.getConditionDesc());
             pstmt.executeUpdate();
         }
+        return getLast();
     }
 
     public void replaceClientInfo(ClientInfo ci) throws Exception {
@@ -312,7 +320,11 @@ public class DBManager {
         pstmt.setString(8, ci.getPhone());
         pstmt.setString(9, ci.getEmail());
         pstmt.setString(10, ci.getOccupation());
-        pstmt.setInt(11, ci.getPhysicianID());
+        if (ci.getPhysicianID() != -1) {
+        	pstmt.setInt(11, ci.getPhysicianID());
+        } else {
+        	pstmt.setNull(11, Types.INTEGER);
+        }
         pstmt.setString(12, ci.getAcdntSgrs());
         pstmt.setString(13, ci.getAllergies());
         pstmt.setString(14, ci.getRepRisk());
@@ -371,7 +383,7 @@ public class DBManager {
         return cinfo;
     }
 
-    public void insertSession(Session s) throws Exception {
+    public int insertSession(Session s) throws Exception {
         sql = "INSERT INTO session "
             +"(client_id, date, time, complaint, treatment, notes, minutes, paid) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -389,6 +401,7 @@ public class DBManager {
         pstmt.setInt(7, s.getMinutes());
         pstmt.setInt(8, s.getPaid());
         pstmt.executeUpdate();
+        return getLast();
     }
 
     public void replaceSession(Session s) throws Exception {
@@ -444,7 +457,7 @@ public class DBManager {
                         + "SELECT MAX(date) "
                         + "FROM session "
                         + "WHERE client_id = " + cid
-                        + ")";
+                        + ") ";
         rs = stmt.executeQuery(sql);
         ns = new Session(cid);
         ns.setDate(rs.getDate("date"));

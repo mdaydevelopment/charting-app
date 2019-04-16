@@ -13,9 +13,12 @@ public class Session {
     private int minutes;
     private int paid;
 
-    public Session() {}
+    public Session() {
+    	this.sessionID = -1;
+    }
 
     public Session(int cid) {
+    	this.sessionID = -1;
         this.clientID = cid;
     }
 
@@ -97,16 +100,3 @@ public class Session {
     }
 
 }
-/*
-            sql = "CREATE TABLE session "
-                        +"(session_id           INTEGER           PRIMARY KEY, "
-                        +"client_id             INT               NOT NULL, "
-                        +"date                  DATE, "
-                        +"time                  CHAR(4), "
-                        +"complaint             TEXT, "
-                        +"treatment             TEXT, "
-                        +"notes                 TEXT, "
-                        +"minutes               INT, "
-                        +"paid                  INT, "
-                        +"FOREIGN KEY (client_id) REFERENCES client (client_id)"
- */
