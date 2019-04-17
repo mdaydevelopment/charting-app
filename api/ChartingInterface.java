@@ -20,16 +20,12 @@ import model.Session;
 
 public class ChartingInterface {
 	private DBManager db;
-	// card array
 	private ClientCard[] cardArray;
 	private int currentCard;
-	// call queue
 	private Queue<ClientCard> callQueue;
 	private ClientCard topCard;
-	// client view
 	private Client currentClient;
 	private ClientInfo currentClientInfo;
-	// session
 	private LinkedList<Session> clientSessions;
 	private ListIterator<Session> sessionIterator;
 	private Session currentSession;
@@ -136,6 +132,7 @@ public class ChartingInterface {
 		callQueue = db.getQueue();
 		topCard = callQueue.poll();
 	}
+
 	public int getTopClientID() {
 		if (topCard != null) {
 			return topCard.getClientID();
@@ -254,15 +251,17 @@ public class ChartingInterface {
 	}
 
 	public void getClientQ() throws Exception {
-		currentClient = db.getClient(topCard.getClientID());
-		currentClientInfo = db.getClientInfo(topCard.getClientID());
-		clientSessions = db.getSessions(topCard.getClientID());
-		sessionIterator = clientSessions.listIterator();
-		if (sessionIterator.hasNext()) {
-			currentSession = sessionIterator.next();
-		} else {
-			currentSession = new Session();
-			clientSessions.offerFirst(currentSession);
+		if (topCard != null) {
+			currentClient = db.getClient(topCard.getClientID());
+			currentClientInfo = db.getClientInfo(topCard.getClientID());
+			clientSessions = db.getSessions(topCard.getClientID());
+			sessionIterator = clientSessions.listIterator();
+			if (sessionIterator.hasNext()) {
+				currentSession = sessionIterator.next();
+			} else {
+				currentSession = new Session();
+				clientSessions.offerFirst(currentSession);
+			}
 		}
 	}
 
@@ -582,5 +581,8 @@ public class ChartingInterface {
 		currentSession.setPaid(p);
 	}
 	
+	public void close() throws Exception {
+		db.close();
+	}
 	
 }
