@@ -179,7 +179,7 @@ public class DBManager {
         }
         pstmt.executeUpdate();
     }
-
+    
     public Client getClient(int id) throws Exception {
         sql = "SELECT * FROM client WHERE client_id = " + id;
         pstmt = c.prepareStatement(sql);
@@ -358,6 +358,7 @@ public class DBManager {
         cinfo = new ClientInfo(infoID);
         cinfo.setClientID(cid);
         cinfo.setDate(rs.getDate("date"));
+        cinfo.setStreet(rs.getString("street"));
         cinfo.setCity(rs.getString("city"));
         cinfo.setState(rs.getString("state"));
         cinfo.setZip(rs.getString("zip"));

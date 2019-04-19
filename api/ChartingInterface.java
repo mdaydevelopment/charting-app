@@ -21,7 +21,9 @@ import model.Session;
 public class ChartingInterface {
 	private DBManager db;
 	private ClientCard[] cardArray;
-	private int currentCard;
+	private Queue<ClientCard> searchQueue;
+	private ClientCard currentCard;
+	private int currentCardIndex;
 	private Queue<ClientCard> callQueue;
 	private ClientCard topCard;
 	private Client currentClient;
@@ -33,7 +35,9 @@ public class ChartingInterface {
 
 	public ChartingInterface() throws Exception {
 		db = new DBManager();
+		System.out.println("Database manager loaded successfully");
 		refreshArray();
+		searchQueue = new LinkedList<ClientCard>();
 		callQueue = new LinkedList<ClientCard>();
 		topCard = cardArray[0];
 		getClient(1);
@@ -44,92 +48,139 @@ public class ChartingInterface {
 	////////////////// card array //////////////////
 	public void refreshArray() throws Exception {
 		cardArray = db.getCards();
-		currentCard = 0;
+		currentCardIndex = 0;
+		currentCard = cardArray[0];
+	}
+
+	public void searchCards(String s) {
+		s = s.toLowerCase();
+		for (ClientCard card : cardArray) {
+			if (card.getFName().toLowerCase() == s
+					|| card.getLName().toLowerCase() == s
+					|| card.getPhone() == s) {
+				searchQueue.add(card);
+			}
+		}
+		if (!searchQueue.isEmpty()) {
+			currentCard = searchQueue.remove();
+		}
 	}
 	
 	public void firstCard() {
-		currentCard = 0;
+		currentCardIndex = 0;
+		currentCard = cardArray[0];
 	}
 	
 	public void lastCard() {
-		currentCard = cardArray.length - 1;
+		currentCardIndex = cardArray.length - 1;
+		currentCard = cardArray[currentCardIndex];
 	}
 	
 	public void nextCard() {
-		if (currentCard < cardArray.length - 1) {
-			currentCard++;
+		if (!searchQueue.isEmpty()) {
+			currentCard = searchQueue.remove();
+		} else if (currentCardIndex < cardArray.length - 1) {
+			currentCardIndex++;
+			currentCard = cardArray[currentCardIndex];
 		}
 	}
 	
 	public void previousCard() {
-		if (currentCard > 0) {
-			currentCard--;
+		if (currentCardIndex > 0) {
+			currentCardIndex--;
+			currentCard = cardArray[currentCardIndex];
 		}
 	}
 	
 	public void sortByLastSession() {
 		Arrays.sort(cardArray, ClientCard.LastSessionComparator);
+		currentCardIndex = 0;
+		currentCard = cardArray[0];
 	}
 
 	public void sortByLastContact() {
 		Arrays.sort(cardArray, ClientCard.LastContactComparator);
+		currentCardIndex = 0;
+		currentCard = cardArray[0];
 	}
 
 	public void sortByTotalSession() {
 		Arrays.sort(cardArray, ClientCard.TotalSessionsComparator);
+		currentCardIndex = 0;
+		currentCard = cardArray[0];
 	}
 
 	public void sortByTotalPaid() {
 		Arrays.sort(cardArray, ClientCard.TotalPaidComparator);
+		currentCardIndex = 0;
+		currentCard = cardArray[0];
 	}
 
 	public int getCardClientID() {
-		return cardArray[currentCard].getClientID();
+		return currentCard.getClientID();
 	}
 	
 	public String getCardFName() {
-		return cardArray[currentCard].getFName();
+		return currentCard.getFName();
 	}
 	
 	public String getCardLName() {
-		return cardArray[currentCard].getLName();
+		return currentCard.getLName();
 	}
 	
 	public String getCardPhone() {
-		return cardArray[currentCard].getPhone();
+		return currentCard.getPhone();
 	}
 	
 	public String getCardEmail() {
-		return cardArray[currentCard].getEmail();
+		return currentCard.getEmail();
 	}
 	
 	public Date getCardLastSession() {
-		return cardArray[currentCard].getLastSession();
+		return currentCard.getLastSession();
 	}
 	
 	public Date getCardLastContact() {
-		return cardArray[currentCard].getLastContact();
+		return currentCard.getLastContact();
 	}
 	
 	public Date getCardDob() {
-		return cardArray[currentCard].getDob();
+		if (currentCard.getDob() != null) {
+			return currentCard.getDob();
+		} else {
+			return Date.valueOf(LocalDate.now());
+		}
 	}
 	
 	public int getCardSessions() {
-		return cardArray[currentCard].getSessions();
+		return currentCard.getSessions();
 	}
 	
 	public int getCardPaid() {
-		return cardArray[currentCard].getPaid();
+		return currentCard.getPaid();
 	}
 	
 	public boolean getCardIgnore() {
-		return cardArray[currentCard].getIgnore();
+		return currentCard.getIgnore();
 	}
-	
+
 	////////////////// call queue //////////////////
 	public void getNewQueue() throws Exception {
 		callQueue = db.getQueue();
+		topCard = callQueue.poll();
+	}
+	
+	public void skipTop() {
+		topCard = callQueue.poll();
+	}
+	
+	public void contactTop() throws Exception {
+		db.contactClient(topCard.getClientID());
+		topCard = callQueue.poll();
+	}
+	
+	public void ignoreTop() throws Exception {
+		db.ignoreClient(topCard.getClientID());
 		topCard = callQueue.poll();
 	}
 
@@ -197,7 +248,11 @@ public class ChartingInterface {
 	
 	public Date getTopDob() {
 		if (topCard != null) {
-			return topCard.getDob();
+			if (topCard.getDob() != null) {
+				return topCard.getDob();
+			} else {
+				return Date.valueOf(LocalDate.now());
+			}
 		} else {
 			return Date.valueOf(LocalDate.now());
 		}
@@ -221,7 +276,6 @@ public class ChartingInterface {
 		}
 
 	}
-	
 
 	////////////////// client info //////////////////
 	public void getClient(int cid) throws Exception {
@@ -238,7 +292,7 @@ public class ChartingInterface {
 	}
 
 	public void getClientC() throws Exception {
-		currentClient = db.getClient(cardArray[currentCard].getClientID());
+		currentClient = db.getClient(currentCard.getClientID());
 		currentClientInfo = db.getClientInfo(currentClient.getClientID());
 		clientSessions = db.getSessions(currentClient.getClientID());
 		sessionIterator = clientSessions.listIterator();
@@ -492,6 +546,7 @@ public class ChartingInterface {
 	////////////////// session //////////////////
 	public void newSession() {
 		currentSession = new Session();
+		currentSession.setDate(Date.valueOf(LocalDate.now()));
 		clientSessions.offerFirst(currentSession);
 		sessionIterator = clientSessions.listIterator();
 	}

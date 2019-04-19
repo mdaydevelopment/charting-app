@@ -26,6 +26,7 @@ public class ClientInfo {
 
     public ClientInfo() {
     	this.cInfoID = -1;
+    	this.physicianID = -1;
         conds = new ArrayList<ClientCondition>();
     }
 

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import database.DBManager;
 import model.Client;
+import model.ClientInfo;
 import model.Session;
 
 public class TestDriver {
@@ -36,6 +37,23 @@ public class TestDriver {
             session2 = list.getFirst();
 
             System.out.println(session2.toString());
+            
+            ClientInfo cinfo1 = new ClientInfo();
+            cinfo1.setClientID(1);
+            cinfo1.setStreet("123 Cool Street");
+            cinfo1.setCity("Asgaard");
+            cinfo1.setState("Fluid");
+            cinfo1.setZip("99999");
+            cinfo1.setPhone("555-666-7777");
+            cinfo1.setEmail("mr.amazing@mdaydevelopment.com");
+            cinfo1.setOccupation("Intern with ?");
+            cinfo1.setAcdntSgrs("Arrow to knee");
+            cinfo1.setAllergies("Crowds");
+            cinfo1.setRepRisk("Awesome overload");
+            
+            db.insertClientInfo(cinfo1);
+            ClientInfo cinfo2 = db.getClientInfo(1);
+            System.out.println(cinfo2.toString());
 
             db.close();
 
