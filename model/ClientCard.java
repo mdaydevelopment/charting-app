@@ -41,14 +41,14 @@ public class ClientCard {
     	new Comparator<ClientCard>() {
     	@Override
     	public int compare(ClientCard c1, ClientCard c2) {
-    		return (c1.getSessions() - c2.getSessions());
+    		return (c2.getSessions() - c1.getSessions());
     	}
     };
     public static Comparator<ClientCard> TotalPaidComparator =
     	new Comparator<ClientCard>() {
     	@Override
     	public int compare(ClientCard c1, ClientCard c2) {
-    		return (c1.getPaid() - c2.getPaid());
+    		return (c2.getPaid() - c1.getPaid());
     	}
     };
 

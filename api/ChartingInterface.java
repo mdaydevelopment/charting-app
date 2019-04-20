@@ -3,6 +3,7 @@ package api;
 import java.sql.Date;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,19 +33,17 @@ public class ChartingInterface {
 	private ListIterator<Session> sessionIterator;
 	private Session currentSession;
 
-
 	public ChartingInterface() throws Exception {
 		db = new DBManager();
 		System.out.println("Database manager loaded successfully");
 		refreshArray();
 		searchQueue = new LinkedList<ClientCard>();
-		callQueue = new LinkedList<ClientCard>();
-		topCard = cardArray[0];
+		getNewQueue();
 		getClient(1);
 		clientSessions = db.getSessions(cardArray[0].getClientID());
 		sessionIterator = clientSessions.listIterator();
 	}
-	
+
 	////////////////// card array //////////////////
 	public void refreshArray() throws Exception {
 		cardArray = db.getCards();
@@ -55,9 +54,8 @@ public class ChartingInterface {
 	public void searchCards(String s) {
 		s = s.toLowerCase();
 		for (ClientCard card : cardArray) {
-			if (card.getFName().toLowerCase() == s
-					|| card.getLName().toLowerCase() == s
-					|| card.getPhone() == s) {
+			if (card.getFName().toLowerCase().equals(s) || card.getLName().toLowerCase().equals(s)
+					|| card.getPhone().equals(s)) {
 				searchQueue.add(card);
 			}
 		}
@@ -65,17 +63,16 @@ public class ChartingInterface {
 			currentCard = searchQueue.remove();
 		}
 	}
-	
-	public void firstCard() {
-		currentCardIndex = 0;
-		currentCard = cardArray[0];
+
+	public void jumpToID(int id) {
+		for (ClientCard card : cardArray) {
+			if (id == card.getClientID()) {
+				currentCard = card;
+				break;
+			}
+		}
 	}
-	
-	public void lastCard() {
-		currentCardIndex = cardArray.length - 1;
-		currentCard = cardArray[currentCardIndex];
-	}
-	
+
 	public void nextCard() {
 		if (!searchQueue.isEmpty()) {
 			currentCard = searchQueue.remove();
@@ -84,14 +81,24 @@ public class ChartingInterface {
 			currentCard = cardArray[currentCardIndex];
 		}
 	}
-	
+
 	public void previousCard() {
 		if (currentCardIndex > 0) {
 			currentCardIndex--;
 			currentCard = cardArray[currentCardIndex];
 		}
 	}
-	
+
+	public void firstCard() {
+		currentCardIndex = 0;
+		currentCard = cardArray[0];
+	}
+
+	public void lastCard() {
+		currentCardIndex = cardArray.length - 1;
+		currentCard = cardArray[currentCardIndex];
+	}
+
 	public void sortByLastSession() {
 		Arrays.sort(cardArray, ClientCard.LastSessionComparator);
 		currentCardIndex = 0;
@@ -106,6 +113,7 @@ public class ChartingInterface {
 
 	public void sortByTotalSession() {
 		Arrays.sort(cardArray, ClientCard.TotalSessionsComparator);
+		System.out.println("sorting");
 		currentCardIndex = 0;
 		currentCard = cardArray[0];
 	}
@@ -119,31 +127,31 @@ public class ChartingInterface {
 	public int getCardClientID() {
 		return currentCard.getClientID();
 	}
-	
+
 	public String getCardFName() {
 		return currentCard.getFName();
 	}
-	
+
 	public String getCardLName() {
 		return currentCard.getLName();
 	}
-	
+
 	public String getCardPhone() {
 		return currentCard.getPhone();
 	}
-	
+
 	public String getCardEmail() {
 		return currentCard.getEmail();
 	}
-	
+
 	public Date getCardLastSession() {
 		return currentCard.getLastSession();
 	}
-	
+
 	public Date getCardLastContact() {
 		return currentCard.getLastContact();
 	}
-	
+
 	public Date getCardDob() {
 		if (currentCard.getDob() != null) {
 			return currentCard.getDob();
@@ -151,34 +159,46 @@ public class ChartingInterface {
 			return Date.valueOf(LocalDate.now());
 		}
 	}
-	
+
 	public int getCardSessions() {
 		return currentCard.getSessions();
 	}
-	
+
 	public int getCardPaid() {
 		return currentCard.getPaid();
 	}
-	
+
 	public boolean getCardIgnore() {
 		return currentCard.getIgnore();
 	}
 
 	////////////////// call queue //////////////////
-	public void getNewQueue() throws Exception {
-		callQueue = db.getQueue();
-		topCard = callQueue.poll();
+	public void getNewQueue() {
+		callQueue = new LinkedList<ClientCard>();
+		sortByLastContact();
+		ZoneId z = ZoneId.of("America/Chicago");
+		LocalDate todayCentral = LocalDate.now(z);
+		for (int i = cardArray.length - 1; i >= 0; i--) {
+			if (cardArray[i].getLastContact() != null && cardArray[i].getLastSession() != null) {
+				if (cardArray[i].getLastContact().compareTo(cardArray[i].getLastSession()) <= 0) {
+					if (cardArray[i].getLastSession().compareTo(Date.valueOf(todayCentral.minusDays(3))) < 0) {
+						callQueue.add(cardArray[i]);
+					}
+				}
+			}
+
+		}
 	}
-	
+
 	public void skipTop() {
 		topCard = callQueue.poll();
 	}
-	
+
 	public void contactTop() throws Exception {
 		db.contactClient(topCard.getClientID());
 		topCard = callQueue.poll();
 	}
-	
+
 	public void ignoreTop() throws Exception {
 		db.ignoreClient(topCard.getClientID());
 		topCard = callQueue.poll();
@@ -191,7 +211,7 @@ public class ChartingInterface {
 			return 0;
 		}
 	}
-	
+
 	public String getTopFName() {
 		if (topCard != null) {
 			return topCard.getFName();
@@ -200,7 +220,7 @@ public class ChartingInterface {
 		}
 
 	}
-	
+
 	public String getTopLName() {
 		if (topCard != null) {
 			return topCard.getLName();
@@ -209,7 +229,7 @@ public class ChartingInterface {
 		}
 
 	}
-	
+
 	public String getTopPhone() {
 		if (topCard != null) {
 			return topCard.getPhone();
@@ -218,7 +238,7 @@ public class ChartingInterface {
 		}
 
 	}
-	
+
 	public String getTopEmail() {
 		if (topCard != null) {
 			return topCard.getEmail();
@@ -227,7 +247,7 @@ public class ChartingInterface {
 		}
 
 	}
-	
+
 	public Date getTopLastSession() {
 		if (topCard != null) {
 			return topCard.getLastSession();
@@ -236,7 +256,7 @@ public class ChartingInterface {
 		}
 
 	}
-	
+
 	public Date getTopLastContact() {
 		if (topCard != null) {
 			return topCard.getLastSession();
@@ -245,7 +265,7 @@ public class ChartingInterface {
 		}
 
 	}
-	
+
 	public Date getTopDob() {
 		if (topCard != null) {
 			if (topCard.getDob() != null) {
@@ -258,7 +278,7 @@ public class ChartingInterface {
 		}
 
 	}
-	
+
 	public int getTopSessions() {
 		if (topCard != null) {
 			return topCard.getSessions();
@@ -267,7 +287,7 @@ public class ChartingInterface {
 		}
 
 	}
-	
+
 	public int getTopPaid() {
 		if (topCard != null) {
 			return topCard.getPaid();
@@ -327,7 +347,7 @@ public class ChartingInterface {
 		clientSessions.add(currentSession);
 		sessionIterator = clientSessions.listIterator();
 	}
-	
+
 	public void submitClient() throws Exception {
 		if (currentClient.getClientID() == -1) {
 			int newID = db.insertClient(currentClient);
@@ -345,11 +365,11 @@ public class ChartingInterface {
 			}
 		}
 	}
-	
+
 	public int getCliClientID() {
 		return currentClient.getClientID();
 	}
-	
+
 	public String getCliFName() {
 		return currentClient.getFName();
 	}
@@ -357,7 +377,7 @@ public class ChartingInterface {
 	public void setCliFName(String fn) {
 		currentClient.setFName(fn);
 	}
-	
+
 	public String getCliLName() {
 		return currentClient.getLName();
 	}
@@ -369,11 +389,11 @@ public class ChartingInterface {
 	public void setCliDob(Date dob) {
 		currentClient.setDob(dob);
 	}
-	
+
 	public Date getCliDob() {
 		return currentClient.getDob();
 	}
-	
+
 	public int getCliReferredBy() {
 		return currentClient.getReferredBy();
 	}
@@ -381,7 +401,7 @@ public class ChartingInterface {
 	public void setCliReferredBy(int rb) {
 		currentClient.setReferredBy(rb);
 	}
-	
+
 	public Date getCliLastContact() {
 		return currentClient.getLastContact();
 	}
@@ -389,7 +409,7 @@ public class ChartingInterface {
 	public void setCliLastContact(Date lc) {
 		currentClient.setLastContact(lc);
 	}
-	
+
 	public boolean getCliIgnore() {
 		return currentClient.getIgnore();
 	}
@@ -397,11 +417,11 @@ public class ChartingInterface {
 	public void setCliIgnore(boolean i) {
 		currentClient.setIgnore(i);
 	}
-	
+
 	public Date getCliDate() {
 		return currentClientInfo.getDate();
 	}
-	
+
 	public String getCliStreet() {
 		return currentClientInfo.getStreet();
 	}
@@ -412,7 +432,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public String getCliCity() {
 		return currentClientInfo.getCity();
 	}
@@ -423,7 +443,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public String getCliState() {
 		return currentClientInfo.getState();
 	}
@@ -434,7 +454,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public String getCliZip() {
 		return currentClientInfo.getZip();
 	}
@@ -445,7 +465,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public String getCliPhone() {
 		return currentClientInfo.getPhone();
 	}
@@ -456,7 +476,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public String getCliEmail() {
 		return currentClientInfo.getEmail();
 	}
@@ -467,7 +487,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public String getCliOccupation() {
 		return currentClientInfo.getOccupation();
 	}
@@ -478,7 +498,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public int getCliPhysicianID() {
 		return currentClientInfo.getPhysicianID();
 	}
@@ -489,7 +509,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public String getCliAcdntSgrs() {
 		return currentClientInfo.getAcdntSgrs();
 	}
@@ -511,7 +531,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public String getCliRepRisk() {
 		return currentClientInfo.getRepRisk();
 	}
@@ -522,7 +542,7 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	public Map<Integer, String> getCliConds() {
 		Map<Integer, String> condMap = new HashMap<Integer, String>();
 		ArrayList<ClientCondition> condArray = currentClientInfo.getConditions();
@@ -533,7 +553,7 @@ public class ChartingInterface {
 	}
 
 	public void setConds(Map<Integer, String> cm) {
-		ArrayList<ClientCondition>  ccArr = new ArrayList<ClientCondition>();
+		ArrayList<ClientCondition> ccArr = new ArrayList<ClientCondition>();
 		for (Map.Entry<Integer, String> entry : cm.entrySet()) {
 			ccArr.add(new ClientCondition(entry.getKey(), entry.getValue()));
 		}
@@ -542,15 +562,16 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(0);
 		}
 	}
-	
+
 	////////////////// session //////////////////
 	public void newSession() {
 		currentSession = new Session();
 		currentSession.setDate(Date.valueOf(LocalDate.now()));
+		currentSession.setClientID(currentClient.getClientID());
 		clientSessions.offerFirst(currentSession);
 		sessionIterator = clientSessions.listIterator();
 	}
-	
+
 	public void submitSession() throws Exception {
 		if (currentSession.getSessionID() == -1) {
 			int newID = db.insertSession(currentSession);
@@ -559,85 +580,85 @@ public class ChartingInterface {
 			db.replaceSession(currentSession);
 		}
 	}
-	
+
 	public void nextSession() {
 		if (sessionIterator.hasNext()) {
 			currentSession = sessionIterator.next();
 		}
 	}
-	
+
 	public void previousSession() {
 		if (sessionIterator.hasPrevious()) {
 			currentSession = sessionIterator.previous();
 		}
 	}
-	
+
 	public void firstSession() {
 		currentSession = clientSessions.getFirst();
 	}
-	
+
 	public void lastSession() {
 		currentSession = clientSessions.getLast();
 	}
-	
+
 	public Date getSesDate() {
 		return currentSession.getDate();
 	}
-	
+
 	public void setSesDate(Date d) {
 		currentSession.setDate(d);
 	}
-	
+
 	public String getSesTime() {
 		return currentSession.getTime();
 	}
-	
+
 	public void setSesTime(String t) {
 		currentSession.setTime(t);
 	}
-	
+
 	public String getSesComplaint() {
 		return currentSession.getComplaint();
 	}
-	
+
 	public void setSesComplaint(String c) {
 		currentSession.setComplaint(c);
 	}
-	
+
 	public String getSesTreatment() {
 		return currentSession.getTreatment();
 	}
-	
+
 	public void setSesTreatment(String t) {
 		currentSession.setTreatment(t);
 	}
-	
+
 	public String getSesNotes() {
 		return currentSession.getNotes();
 	}
-	
+
 	public void setSesNotes(String n) {
 		currentSession.setNotes(n);
 	}
-	
+
 	public int getSesMinutes() {
 		return currentSession.getMinutes();
 	}
-	
+
 	public void setSesMinutes(int m) {
 		currentSession.setMinutes(m);
 	}
-	
+
 	public int getSesPaid() {
 		return currentSession.getPaid();
 	}
-	
+
 	public void setSesPaid(int p) {
 		currentSession.setPaid(p);
 	}
-	
+
 	public void close() throws Exception {
 		db.close();
 	}
-	
+
 }

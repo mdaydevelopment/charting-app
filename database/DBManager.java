@@ -41,23 +41,26 @@ public class DBManager {
         rs = stmt.executeQuery(sql);
         ClientCard[] cards = new ClientCard[rs.getInt(1)];
         sql = "SELECT c.client_id, c.f_name, c.l_name, ci.phone, "
-            + "ci.email, s.lasts, c.last_contact, c.dob, "
-            + "s.totals, s.totalp, c.ignore "
-            + "FROM client c "
-            + "LEFT JOIN "
-                + "(SELECT client_id, phone, email "
-                + "FROM client_info "
-                + "WHERE (client_id, date) = "
-                    + "(SELECT client_id, MAX(date) "
-                    + "FROM client_info "
-                    + "GROUP BY date)) ci "
-            + "ON c.client_id = ci.client_id "
-            + "LEFT JOIN "
-            + "(SELECT client_id, COUNT(*) totals, "
-            + "SUM(paid) totalp, MAX(date) lasts "
-                + "FROM session "
-                + "GROUP BY client_id) s "
-            + "ON c.client_id = s.client_id";
+        		+ "ci.email, s.lasts, c.last_contact, c.dob, "
+        		+ "s.totals, s.totalp, c.ignore "
+        	+ "FROM client c "
+        	+ "LEFT JOIN "
+        	    + "(SELECT DISTINCT cis.client_id, cis.phone, cis.email "
+        	    + "FROM client_info cis "
+        	    + "JOIN "
+        	        + "(SELECT client_id, MAX(date) maxdate "
+        	        + "FROM client_info "
+        	        + "GROUP BY client_id) ciss "
+        	    + "WHERE cis.client_id = ciss.client_id "
+        	    + "AND cis.date = ciss.maxdate) ci "
+        	+ "ON c.client_id = ci.client_id "
+        	+ "LEFT JOIN "
+        	    + "(SELECT client_id, COUNT(*) totals, "
+        	    + "SUM(paid) totalp, MAX(date) lasts "
+        	    + "FROM session "
+        	    + "GROUP BY client_id) s "
+        	+ "ON c.client_id = s.client_id "
+        	+ "ORDER BY c.client_id; ";
         rs = stmt.executeQuery(sql);
         for (int i = 0; i < cards.length; i++) {
 			rs.next();
@@ -78,52 +81,6 @@ public class DBManager {
             }
 		}
         return cards;
-    }
-    public Queue<ClientCard> getQueue() throws Exception {
-        Queue<ClientCard> newQueue = new LinkedList<ClientCard>();
-        sql = "SELECT c.client_id, c.f_name, c.l_name, ci.phone, "
-            + "ci.email, s.lasts, c.last_contact, c.dob, "
-            + "s.totals, s.totalp, c.ignore "
-            + "FROM client c "
-            + "LEFT JOIN "
-                + "(SELECT client_id, phone, email "
-                + "FROM client_info "
-                + "WHERE (client_id, date) = "
-                    + "(SELECT client_id, MAX(date) "
-                    + "FROM client_info "
-                    + "GROUP BY date)) ci "
-            + "ON c.client_id = ci.client_id "
-            + "LEFT JOIN "
-            + "(SELECT client_id, COUNT(*) totals, "
-            + "SUM(paid) totalp, MAX(date) lasts "
-                + "FROM session "
-                + "GROUP BY client_id) s "
-            + "ON c.client_id = s.client_id "
-            + "WHERE c.last_contact < "
-                + "(SELECT date('now', '-2 days')) "
-            + "AND c.last_contact <= s.lasts "
-            + "ORDER BY c.last_contact";
-        rs = stmt.executeQuery(sql);
-        ClientCard nc;
-        while (rs.next()) {
-			nc = new ClientCard(rs.getInt(1));
-            nc.setFName(rs.getString(2));
-            nc.setLName(rs.getString(3));
-            nc.setPhone(rs.getString(4));
-            nc.setEmail(rs.getString(5));
-            nc.setLastSession(rs.getDate(6));
-            nc.setLastContact(rs.getDate(7));
-            nc.setDob(rs.getDate(8));
-            nc.setSessions(rs.getInt(9));
-            nc.setPaid(rs.getInt(10));
-            if (rs.getInt(11) == 1) {
-                nc.setIgnore(true);
-            } else {
-                nc.setIgnore(false);
-            }
-            newQueue.add(nc);
-		}
-        return newQueue;
     }
 
     public int insertClient(Client cl) throws Exception {
@@ -155,14 +112,14 @@ public class DBManager {
 
     public void replaceClient(Client cl) throws Exception {
         sql = "REPLACE INTO client "
-            +"(f_name, l_name, dob, referred_by, last_contact, ignore) "
-            + "VALUES (?, ?, ?, ?, ?, ?)";
+            +"(client_id, f_name, l_name, dob, referred_by, last_contact, ignore) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
         pstmt = c.prepareStatement(sql);
         pstmt.setInt(1, cl.getClientID());
         pstmt.setString(2, cl.getFName());
         pstmt.setString(3, cl.getLName());
         pstmt.setDate(4, cl.getDob());
-        if (cl.getReferredBy() != 0) {
+        if (cl.getReferredBy() != -1) {
             pstmt.setInt(5, cl.getReferredBy());
         } else {
             pstmt.setNull(5, Types.INTEGER);
@@ -188,7 +145,11 @@ public class DBManager {
         nc.setFName(rs.getString("f_name"));
         nc.setLName(rs.getString("l_name"));
         nc.setDob(rs.getDate("dob"));
-        nc.setReferredBy(rs.getInt("referred_by"));
+        if (rs.getInt("referred_by") == 0) {
+        	nc.setReferredBy(-1);
+        } else {
+        	nc.setReferredBy(rs.getInt("referred_by"));
+        }
         nc.setLastContact(rs.getDate("last_contact"));
         if (rs.getInt("ignore") == 1) {
             nc.setIgnore(true);

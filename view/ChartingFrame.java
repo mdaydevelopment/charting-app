@@ -26,6 +26,9 @@ import java.awt.Font;
 import javax.swing.JTextPane;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.JComboBox;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class ChartingFrame extends JFrame {
 
@@ -101,7 +104,7 @@ public class ChartingFrame extends JFrame {
 
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1280, 769);
+		setBounds(100, 100, 1253, 769);
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -130,9 +133,8 @@ public class ChartingFrame extends JFrame {
 		menu.add(menuItem_1);
 
 		JMenuItem menuItem_2 = new JMenuItem("Total Sessions");
-		menuItem_2.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		menuItem_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				charts.sortByTotalSession();
 				refreshCard();
 			}
@@ -140,9 +142,8 @@ public class ChartingFrame extends JFrame {
 		menu.add(menuItem_2);
 
 		JMenuItem menuItem_3 = new JMenuItem("Total Paid");
-		menuItem_3.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		menuItem_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				charts.sortByTotalPaid();
 				refreshCard();
 			}
@@ -264,7 +265,12 @@ public class ChartingFrame extends JFrame {
 		contentPane.add(lblLastSessionQ);
 
 		txtClientIdC = new JTextField();
-		txtClientIdC.setEditable(false);
+		txtClientIdC.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				charts.jumpToID(Integer.valueOf(txtClientIdC.getText()));
+				refreshCard();
+			}
+		});
 		txtClientIdC.setText(String.valueOf(charts.getCardClientID()));
 		txtClientIdC.setColumns(10);
 		txtClientIdC.setBounds(20, 80, 114, 19);
@@ -373,18 +379,13 @@ public class ChartingFrame extends JFrame {
 		txtDateOfBirthC.setBounds(146, 312, 114, 19);
 		contentPane.add(txtDateOfBirthC);
 
-		JButton btnSearchC = new JButton("Search");
-		btnSearchC.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		txtSearchTextC = new JTextField();
+		txtSearchTextC.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				charts.searchCards(txtSearchTextC.getText());
 				refreshCard();
 			}
 		});
-		btnSearchC.setBounds(278, 89, 116, 25);
-		contentPane.add(btnSearchC);
-
-		txtSearchTextC = new JTextField();
 		txtSearchTextC.setText("Search Text");
 		txtSearchTextC.setBounds(280, 121, 114, 19);
 		contentPane.add(txtSearchTextC);
@@ -804,18 +805,46 @@ public class ChartingFrame extends JFrame {
 		contentPane.add(txtpnOtherNotesS);
 
 		JButton btnNext = new JButton("Next");
+		btnNext.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				charts.nextSession();
+				refreshSession();
+			}
+		});
 		btnNext.setBounds(1100, 48, 116, 25);
 		contentPane.add(btnNext);
 
 		JButton btnPrevious = new JButton("Previous");
+		btnPrevious.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				charts.previousSession();
+				refreshSession();
+			}
+		});
 		btnPrevious.setBounds(1100, 77, 116, 25);
 		contentPane.add(btnPrevious);
 
 		JButton btnFirst = new JButton("First");
+		btnFirst.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				charts.firstSession();
+				refreshSession();
+			}
+		});
 		btnFirst.setBounds(1100, 106, 116, 25);
 		contentPane.add(btnFirst);
 
 		JButton btnLast = new JButton("Last");
+		btnLast.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				charts.lastSession();
+				refreshSession();
+			}
+		});
 		btnLast.setBounds(1102, 135, 116, 25);
 		contentPane.add(btnLast);
 
@@ -962,6 +991,8 @@ public class ChartingFrame extends JFrame {
 			txtDateOfBirth.setText(String.valueOf(charts.getCliDob()));
 			txtLastUpdated.setText(String.valueOf(charts.getCliDate()));
 			txtOccupation.setText(charts.getCliOccupation());
+			txtReferredBy.setText(String.valueOf(charts.getCliReferredBy()));
+			txtPhysician.setText(String.valueOf(charts.getCliPhysicianID()));
 			txtpnAccidentsOrSurgeries.setText(charts.getCliAcdntSgrs());
 			txtpnAllergies.setText(charts.getCliAllergies());
 			txtpnConditions.setText(null);
