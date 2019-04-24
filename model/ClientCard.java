@@ -3,7 +3,7 @@ package model;
 import java.sql.Date;
 import java.util.Comparator;
 
-public class ClientCard {
+public class ClientCard implements Comparable<ClientCard> {
     private int clientID;
     private String fName;
     private String lName;
@@ -27,14 +27,14 @@ public class ClientCard {
     	new Comparator<ClientCard>() {
     	@Override
     	public int compare(ClientCard c1, ClientCard c2) {
-    		return (c1.getLastSession().compareTo(c2.getLastSession()));
+    		return (c2.getLastSession().compareTo(c1.getLastSession()));
     	}
     };
     public static Comparator<ClientCard> LastContactComparator =
     	new Comparator<ClientCard>() {
     	@Override
     	public int compare(ClientCard c1, ClientCard c2) {
-    		return (c1.getLastContact().compareTo(c2.getLastContact()));
+    		return (c2.getLastContact().compareTo(c1.getLastContact()));
     	}
     };
     public static Comparator<ClientCard> TotalSessionsComparator =
@@ -145,6 +145,11 @@ public class ClientCard {
 		return "ClientCard [clientID=" + clientID + ", fName=" + fName + ", lName=" + lName + ", phone=" + phone
 				+ ", email=" + email + ", lastSession=" + lastSession + ", lastContact=" + lastContact + ", dob=" + dob
 				+ ", sessions=" + sessions + ", paid=" + paid + ", ignore=" + ignore + "]";
+	}
+
+	@Override
+	public int compareTo(ClientCard o) {
+		return lastSession.compareTo(o.getLastSession());
 	}
 
 

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 import database.DBManager;
@@ -25,7 +26,7 @@ public class ChartingInterface {
 	private Queue<ClientCard> searchQueue;
 	private ClientCard currentCard;
 	private int currentCardIndex;
-	private Queue<ClientCard> callQueue;
+	private PriorityQueue<ClientCard> callQueue;
 	private ClientCard topCard;
 	private Client currentClient;
 	private ClientInfo currentClientInfo;
@@ -174,8 +175,7 @@ public class ChartingInterface {
 
 	////////////////// call queue //////////////////
 	public void getNewQueue() {
-		callQueue = new LinkedList<ClientCard>();
-		sortByLastContact();
+		callQueue = new PriorityQueue<ClientCard>();
 		ZoneId z = ZoneId.of("America/Chicago");
 		LocalDate todayCentral = LocalDate.now(z);
 		for (int i = cardArray.length - 1; i >= 0; i--) {
@@ -186,8 +186,8 @@ public class ChartingInterface {
 					}
 				}
 			}
-
 		}
+		topCard = callQueue.poll();
 	}
 
 	public void skipTop() {
@@ -259,7 +259,7 @@ public class ChartingInterface {
 
 	public Date getTopLastContact() {
 		if (topCard != null) {
-			return topCard.getLastSession();
+			return topCard.getLastContact();
 		} else {
 			return Date.valueOf(LocalDate.now());
 		}
@@ -357,12 +357,8 @@ public class ChartingInterface {
 			currentClientInfo.setCInfoID(newID);
 		} else {
 			db.replaceClient(currentClient);
-			if (currentClientInfo.getCInfoID() == -1) {
-				int newID = db.insertClientInfo(currentClientInfo);
-				currentClientInfo.setCInfoID(newID);
-			} else {
-				db.insertClientInfo(currentClientInfo);
-			}
+			int newID = db.insertClientInfo(currentClientInfo);
+			currentClientInfo.setCInfoID(newID);
 		}
 	}
 
@@ -543,24 +539,82 @@ public class ChartingInterface {
 		}
 	}
 
-	public Map<Integer, String> getCliConds() {
-		Map<Integer, String> condMap = new HashMap<Integer, String>();
+	public Map<String, String> getCliConds() throws Exception {
+		Map<String, String> condMap = new HashMap<String, String>();
 		ArrayList<ClientCondition> condArray = currentClientInfo.getConditions();
+		String[] table = db.getConditionTable();
 		for (ClientCondition cond : condArray) {
-			condMap.put(cond.getConditionID(), cond.getConditionDesc());
+			condMap.put(table[cond.getConditionID()], cond.getConditionDesc());
 		}
 		return condMap;
 	}
 
-	public void setConds(Map<Integer, String> cm) {
+	public void setConds(Map<String, String> cm) throws Exception, NullPointerException {
 		ArrayList<ClientCondition> ccArr = new ArrayList<ClientCondition>();
-		for (Map.Entry<Integer, String> entry : cm.entrySet()) {
-			ccArr.add(new ClientCondition(entry.getKey(), entry.getValue()));
+		String[] table = db.getConditionTable();
+		int cID;
+		for (Map.Entry<String, String> entry : cm.entrySet()) {
+			cID = 0;
+			String cName = entry.getKey();
+			for (int i = 1; i < table.length; i++) {
+				if (cName.toLowerCase().equals(table[i].toLowerCase())) {
+					cID = i;
+					break;
+				}
+			}
+			if (cID == 0) {
+				throw new NullPointerException("Condition not in list");
+			}
+			ccArr.add(new ClientCondition(cID, entry.getValue()));
 		}
 		currentClientInfo.setConditions(ccArr);
 		if (currentClientInfo.getCInfoID() != 0) {
 			currentClientInfo.setCInfoID(0);
 		}
+	}
+	
+	public void addCondition(String c, String d) throws Exception, NullPointerException {
+		String[] table = db.getConditionTable();
+		int cID = 0;
+		for (int i = 1; i < table.length; i++) {
+			if (c.toLowerCase().equals(table[i].toLowerCase())) {
+				cID = i;
+				break;
+			}
+		}
+		if (cID == 0) {
+			throw new NullPointerException("Condition not in list");
+		}
+		currentClientInfo.addCondition(cID, d);
+	}
+	
+	public void removeCondition(String c) throws Exception, NullPointerException {
+		String[] table = db.getConditionTable();
+		int cID = 0;
+		for (int i = 1; i < table.length; i++) {
+			if (c.toLowerCase().equals(table[i].toLowerCase())) {
+				cID = i;
+				break;
+			}
+		}
+		if (cID == 0) {
+			throw new NullPointerException("Condition not in list");
+		}
+		ArrayList<ClientCondition> currentConditions = currentClientInfo.getConditions();
+		for (int i = 0; i < currentConditions.size(); i++) {
+			if (currentConditions.get(i).getConditionID() == cID) {
+				currentConditions.remove(cID);
+				break;
+			}
+		}
+	}
+	
+	public String[] getConditionTable() throws Exception {
+		return db.getConditionTable();
+	}
+	
+	public void addTrackedCondition(String c) throws Exception {
+		db.insertCondition(c);
 	}
 
 	////////////////// session //////////////////
@@ -576,6 +630,8 @@ public class ChartingInterface {
 		if (currentSession.getSessionID() == -1) {
 			int newID = db.insertSession(currentSession);
 			currentSession.setSessionID(newID);
+			sessionIterator = clientSessions.listIterator();
+			currentSession = sessionIterator.next();
 		} else {
 			db.replaceSession(currentSession);
 		}
@@ -594,11 +650,17 @@ public class ChartingInterface {
 	}
 
 	public void firstSession() {
-		currentSession = clientSessions.getFirst();
+		sessionIterator = clientSessions.listIterator();
+		if (sessionIterator.hasNext()) {
+			currentSession = sessionIterator.next();
+		}
 	}
 
 	public void lastSession() {
-		currentSession = clientSessions.getLast();
+		sessionIterator = clientSessions.listIterator(clientSessions.size() -1);
+		if (sessionIterator.hasNext()) {
+			currentSession = sessionIterator.next();
+		}
 	}
 
 	public Date getSesDate() {

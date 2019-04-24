@@ -29,6 +29,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JComboBox;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.JScrollBar;
 
 public class ChartingFrame extends JFrame {
 
@@ -83,6 +84,8 @@ public class ChartingFrame extends JFrame {
 	private JTextPane txtpnComplaintS;
 	private JTextPane txtpnTreatmentS;
 	private JTextPane txtpnOtherNotesS;
+	private JTextField txtCondition;
+	private JTextField txtDescription;
 
 	/**
 	 * Create the frame.
@@ -442,7 +445,6 @@ public class ChartingFrame extends JFrame {
 				try {
 					charts.getClientC();
 					refreshClient();
-					refreshSession();
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
@@ -596,7 +598,7 @@ public class ChartingFrame extends JFrame {
 		txtReferredBy.setColumns(10);
 
 		chckbxIgnore = new JCheckBox("Ignore");
-		chckbxIgnore.setBounds(691, 650, 131, 23);
+		chckbxIgnore.setBounds(691, 679, 131, 23);
 		contentPane.add(chckbxIgnore);
 
 		JLabel lblAccidentsOrSurgeries = new JLabel("Accidents or Surgeries");
@@ -643,7 +645,7 @@ public class ChartingFrame extends JFrame {
 
 		txtpnConditions = new JTextPane();
 		txtpnConditions.setText("Conditions");
-		txtpnConditions.setBounds(439, 548, 366, 87);
+		txtpnConditions.setBounds(439, 582, 366, 87);
 		contentPane.add(txtpnConditions);
 
 		JButton btnNew = new JButton("New");
@@ -652,10 +654,9 @@ public class ChartingFrame extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				charts.newClient();
 				refreshClient();
-				refreshSession();
 			}
 		});
-		btnNew.setBounds(439, 649, 116, 25);
+		btnNew.setBounds(439, 678, 116, 25);
 		contentPane.add(btnNew);
 
 		JButton btnSubmit = new JButton("Submit");
@@ -683,10 +684,23 @@ public class ChartingFrame extends JFrame {
 				refreshClient();
 			}
 		});
-		btnSubmit.setBounds(565, 649, 116, 25);
+		btnSubmit.setBounds(563, 678, 116, 25);
 		contentPane.add(btnSubmit);
 
 		JButton btnAddCondition = new JButton("Add");
+		btnAddCondition.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					charts.addCondition(txtCondition.getText(), txtDescription.getText());
+				} catch (NullPointerException e1) {
+					e1.printStackTrace();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+				refreshClient();
+			}
+		});
 		btnAddCondition.setBounds(563, 516, 116, 25);
 		contentPane.add(btnAddCondition);
 
@@ -702,7 +716,7 @@ public class ChartingFrame extends JFrame {
 				refreshTop();
 			}
 		});
-		btnContactQ.setBounds(274, 417, 116, 25);
+		btnContactQ.setBounds(268, 484, 116, 25);
 		contentPane.add(btnContactQ);
 
 		JButton btnSkipQ = new JButton("Skip");
@@ -713,7 +727,7 @@ public class ChartingFrame extends JFrame {
 				refreshTop();
 			}
 		});
-		btnSkipQ.setBounds(274, 449, 116, 25);
+		btnSkipQ.setBounds(268, 516, 116, 25);
 		contentPane.add(btnSkipQ);
 
 		JButton btnIgnoreQ = new JButton("Ignore");
@@ -728,7 +742,7 @@ public class ChartingFrame extends JFrame {
 				refreshTop();
 			}
 		});
-		btnIgnoreQ.setBounds(274, 480, 116, 25);
+		btnIgnoreQ.setBounds(268, 548, 116, 25);
 		contentPane.add(btnIgnoreQ);
 
 		JLabel lblClient = new JLabel("Client");
@@ -882,6 +896,18 @@ public class ChartingFrame extends JFrame {
 		contentPane.add(btnSubmitS);
 
 		JButton btnRemove = new JButton("Remove");
+		btnRemove.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					charts.removeCondition(txtCondition.getText());
+				} catch (NullPointerException e1) {
+					e1.printStackTrace();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 		btnRemove.setBounds(689, 516, 116, 25);
 		contentPane.add(btnRemove);
 
@@ -922,8 +948,36 @@ public class ChartingFrame extends JFrame {
 				refreshTop();
 			}
 		});
-		btnRefreshQ.setBounds(274, 512, 116, 25);
+		btnRefreshQ.setBounds(268, 582, 116, 25);
 		contentPane.add(btnRefreshQ);
+		
+		txtCondition = new JTextField();
+		txtCondition.setText("Condition");
+		txtCondition.setBounds(439, 551, 114, 19);
+		contentPane.add(txtCondition);
+		txtCondition.setColumns(10);
+		
+		txtDescription = new JTextField();
+		txtDescription.setText("Description");
+		txtDescription.setBounds(565, 551, 240, 19);
+		contentPane.add(txtDescription);
+		txtDescription.setColumns(10);
+		
+		JButton btnViewC_1 = new JButton("View");
+		btnViewC_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					charts.getClientQ();
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				refreshClient();
+			}
+		});
+		btnViewC_1.setBounds(268, 427, 116, 25);
+		contentPane.add(btnViewC_1);
 	}
 
 	private static void addPopup(Component component, final JPopupMenu popup) {
@@ -997,11 +1051,12 @@ public class ChartingFrame extends JFrame {
 			txtpnAllergies.setText(charts.getCliAllergies());
 			txtpnConditions.setText(null);
 			StyledDocument txt = txtpnConditions.getStyledDocument();
-			Map<Integer, String> conds = charts.getCliConds();
-			for (Map.Entry<Integer, String> cond : conds.entrySet()) {
-				txt.insertString(txt.getLength(), cond.getKey().toString() + " " + cond.getValue() + "\n", null);
+			Map<String, String> conds = charts.getCliConds();
+			for (Map.Entry<String, String> cond : conds.entrySet()) {
+				txt.insertString(txt.getLength(), cond.getKey().toString() + ", " + cond.getValue() + "\n", null);
 			}
 			chckbxIgnore.setSelected(charts.getCliIgnore());
+			refreshSession();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}

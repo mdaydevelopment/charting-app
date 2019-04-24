@@ -253,6 +253,7 @@ public class DBManager {
             sql = "INSERT INTO client_condition "
                 +"(cinfo_id, condition_id, condition_desc) "
                 +"VALUES (?, ?, ?)";
+            pstmt = c.prepareStatement(sql);
             pstmt.setInt(1, key);
             pstmt.setInt(2, cond.getConditionID());
             pstmt.setString(3, cond.getConditionDesc());
@@ -296,6 +297,7 @@ public class DBManager {
             sql = "INSERT INTO client_condition "
                 +"(cinfo_id, condition_id, condition_desc) "
                 +"VALUES (?, ?, ?)";
+            pstmt = c.prepareStatement(sql);
             pstmt.setInt(1, key);
             pstmt.setInt(2, cond.getConditionID());
             pstmt.setString(3, cond.getConditionDesc());
@@ -309,11 +311,16 @@ public class DBManager {
             + "occupation, physician_id, accidents_surgeries, allergies, repetitive_risk "
             + "FROM client_info "
             + "WHERE client_id = " + cid
-            + " AND date = ("
-                        + "SELECT MAX(date) "
-                        + "FROM client_info "
-                        + "WHERE client_id = " + cid
-                        + ")";
+            + " AND cinfo_id = ("
+            	+ "SELECT MAX(cinfo_id) "
+            	+ "FROM client_info "
+            	+ "WHERE client_id = " + cid
+            	+ " AND date = ("
+					+ "SELECT MAX(date) "
+					+ "FROM client_info "
+					+ "WHERE client_id = " + cid
+					+ ")"
+                + ")";
         rs = stmt.executeQuery(sql);
         int infoID = rs.getInt("cinfo_id");
         cinfo = new ClientInfo(infoID);
@@ -342,6 +349,7 @@ public class DBManager {
             ncc.setConditionDesc(rs.getString("condition_desc"));
             conds.add(ncc);
         }
+        cinfo.setConditions(conds);
         return cinfo;
     }
 
@@ -430,6 +438,22 @@ public class DBManager {
         ns.setMinutes(rs.getInt("minutes"));
         ns.setPaid(rs.getInt("paid"));
         return ns;
+    }
+
+    public String[] getConditionTable() throws Exception {
+    	sql = "SELECT MAX(condition_id) FROM condition";
+    	rs = stmt.executeQuery(sql);
+    	String[] table = new String[rs.getInt(1) + 1];
+    	sql = "SELECT condition_id, condition FROM condition";
+    	rs = stmt.executeQuery(sql);
+    	while (rs.next()) {
+    		table[rs.getInt("condition_id")] = rs.getString("condition");
+    	}
+    	return table;
+    }
+    
+    public void insertCondition(String c) throws Exception {
+    	sql = "INSERT INTO condition VALUES " + c;
     }
 
     public int getLast() throws Exception {
