@@ -9,8 +9,6 @@ import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Queue;
-
 import model.Client;
 import model.ClientCard;
 import model.ClientCondition;
@@ -36,31 +34,38 @@ public class DBManager {
         }
     }
 
+    // this is what happens when you don't use a real datetime
     public ClientCard[] getCards() throws Exception {
         sql = "SELECT COUNT(*) FROM client";
         rs = stmt.executeQuery(sql);
         ClientCard[] cards = new ClientCard[rs.getInt(1)];
         sql = "SELECT c.client_id, c.f_name, c.l_name, ci.phone, "
-        		+ "ci.email, s.lasts, c.last_contact, c.dob, "
-        		+ "s.totals, s.totalp, c.ignore "
-        	+ "FROM client c "
-        	+ "LEFT JOIN "
-        	    + "(SELECT DISTINCT cis.client_id, cis.phone, cis.email "
-        	    + "FROM client_info cis "
-        	    + "JOIN "
-        	        + "(SELECT client_id, MAX(date) maxdate "
-        	        + "FROM client_info "
-        	        + "GROUP BY client_id) ciss "
-        	    + "WHERE cis.client_id = ciss.client_id "
-        	    + "AND cis.date = ciss.maxdate) ci "
-        	+ "ON c.client_id = ci.client_id "
-        	+ "LEFT JOIN "
-        	    + "(SELECT client_id, COUNT(*) totals, "
-        	    + "SUM(paid) totalp, MAX(date) lasts "
-        	    + "FROM session "
-        	    + "GROUP BY client_id) s "
-        	+ "ON c.client_id = s.client_id "
-        	+ "ORDER BY c.client_id; ";
+				+ "ci.email, s.lasts, c.last_contact, c.dob, "
+				+ "s.totals, s.totalp, c.ignore "
+			+ "FROM client c "
+			+ "LEFT JOIN "
+				+ "(SELECT cis.client_id, cis.phone, cis.email "
+				+ "FROM client_info cis "
+				+ "JOIN "
+					+ "(SELECT mid.client_id, MAX(mid.cinfo_id) maxid "
+					+ "FROM client_info mid "
+					+ "JOIN "
+						+ "(SELECT client_id, MAX(date) maxdate "
+						+ "FROM client_info "
+						+ "GROUP BY client_id) mdt "
+					+ "ON mdt.client_id = mid.client_id "
+					+ "WHERE mid.date = mdt.maxdate "
+					+ "GROUP BY mid.client_id) mid "
+				+ "ON cis.client_id = mid.client_id "
+				+ "WHERE cis.cinfo_id = mid.maxid) ci "
+			+ "ON c.client_id = ci.client_id "
+			+ "LEFT JOIN "
+				+ "(SELECT client_id, COUNT(*) totals, "
+					+ "SUM(paid) totalp, MAX(date) lasts "
+				+ "FROM session "
+				+ "GROUP BY client_id) s "
+			+ "ON c.client_id = s.client_id "
+			+ "ORDER BY c.client_id ";
         rs = stmt.executeQuery(sql);
         for (int i = 0; i < cards.length; i++) {
 			rs.next();

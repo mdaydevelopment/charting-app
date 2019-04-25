@@ -11,8 +11,6 @@ import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
-import javax.swing.JPopupMenu;
-import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Date;
@@ -26,10 +24,8 @@ import java.awt.Font;
 import javax.swing.JTextPane;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.JComboBox;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import javax.swing.JScrollBar;
 
 public class ChartingFrame extends JFrame {
 
@@ -978,26 +974,6 @@ public class ChartingFrame extends JFrame {
 		});
 		btnViewC_1.setBounds(268, 427, 116, 25);
 		contentPane.add(btnViewC_1);
-	}
-
-	private static void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
-				}
-			}
-
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
-				}
-			}
-
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
 	}
 
 	private void refreshCard() {
