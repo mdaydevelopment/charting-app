@@ -34,16 +34,16 @@ public class DBManager {
         }
     }
 
-    // this is what happens when you don't use a real datetime
     public ClientCard[] getCards() throws Exception {
         sql = "SELECT COUNT(*) FROM client";
         rs = stmt.executeQuery(sql);
         ClientCard[] cards = new ClientCard[rs.getInt(1)];
+        // this is what happens when you don't use a real datetime
         sql = "SELECT c.client_id, c.f_name, c.l_name, ci.phone, "
 				+ "ci.email, s.lasts, c.last_contact, c.dob, "
 				+ "s.totals, s.totalp, c.ignore "
 			+ "FROM client c "
-			+ "LEFT JOIN "
+			+ "JOIN "
 				+ "(SELECT cis.client_id, cis.phone, cis.email "
 				+ "FROM client_info cis "
 				+ "JOIN "
