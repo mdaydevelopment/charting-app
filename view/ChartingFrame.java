@@ -615,6 +615,7 @@ public class ChartingFrame extends JFrame {
 		txtpnAllergies.setBounds(439, 459, 366, 50);
 		contentPane.add(txtpnAllergies);
 
+		/*
 		JLabel lblPhysician = new JLabel("Physician");
 		lblPhysician.setBounds(565, 285, 114, 15);
 		contentPane.add(lblPhysician);
@@ -634,6 +635,7 @@ public class ChartingFrame extends JFrame {
 		txtPhysicianPhone.setBounds(691, 312, 114, 19);
 		contentPane.add(txtPhysicianPhone);
 		txtPhysicianPhone.setColumns(10);
+		*/
 
 		JLabel lblAdd = new JLabel("Conditions");
 		lblAdd.setBounds(439, 521, 114, 15);
