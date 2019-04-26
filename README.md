@@ -1,5 +1,5 @@
 # charting-app
-This is a charting application for a self-employed massage therapist.
+This is a charting application for my partner's massage therapy business.
 
 It is built on SQLite using JDBC.
 
