@@ -261,10 +261,9 @@ public class ChartingInterface {
 		for (int i = cardArray.length - 1; i >= 0; i--) {
 			if (!cardArray[i].getIgnore()) {
 				if (cardArray[i].getLastContact() != null && cardArray[i].getLastSession() != null) {
-					if (cardArray[i].getLastContact().compareTo(cardArray[i].getLastSession()) <= 0) {
-						if (cardArray[i].getLastSession().compareTo(Date.valueOf(todayCentral.minusDays(3))) < 0) {
-							callQueue.add(cardArray[i]);
-						}
+					if (cardArray[i].getLastContact().compareTo(cardArray[i].getLastSession()) <= 0
+						&& cardArray[i].getLastSession().compareTo(Date.valueOf(todayCentral.minusDays(3))) < 0) {
+						callQueue.add(cardArray[i]);
 					}
 				}
 			}
