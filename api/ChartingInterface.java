@@ -871,13 +871,9 @@ public class ChartingInterface {
 		if (cID == 0) {
 			throw new NullPointerException("Condition not in list");
 		}
+		ClientCondition thisCondition = new ClientCondition(cID);
 		ArrayList<ClientCondition> currentConditions = currentClientInfo.getConditions();
-		for (int i = 0; i < currentConditions.size(); i++) {
-			if (currentConditions.get(i).getConditionID() == cID) {
-				currentConditions.remove(cID);
-				break;
-			}
-		}
+		currentConditions.remove(thisCondition);
 	}
 	
 	/**

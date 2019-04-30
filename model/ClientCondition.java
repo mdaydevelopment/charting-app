@@ -31,6 +31,14 @@ public class ClientCondition {
     public void setConditionDesc(String cd) {
         this.conditionDesc = cd;
     }
+    
+    public boolean equals(Object obj) {
+    	if (obj == null) return false;
+    	if (obj == this) return true;
+    	if (!(obj instanceof ClientCondition)) return false;
+    	ClientCondition o = (ClientCondition) obj;
+    	return o.getConditionID() == this.conditionID;
+    }
 
 	@Override
 	public String toString() {

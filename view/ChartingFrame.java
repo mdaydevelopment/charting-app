@@ -899,6 +899,7 @@ public class ChartingFrame extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				try {
 					charts.removeCondition(txtCondition.getText());
+					refreshClient();
 				} catch (NullPointerException e1) {
 					e1.printStackTrace();
 				} catch (Exception e1) {
