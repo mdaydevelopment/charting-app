@@ -915,7 +915,7 @@ public class ChartingFrame extends JFrame {
 		lblSession.setBounds(850, 12, 110, 29);
 		contentPane.add(lblSession);
 
-		lblIgnoreC = new JLabel("Ignore");
+		lblIgnoreC = new JLabel("");
 		lblIgnoreC.setBounds(20, 343, 110, 15);
 		contentPane.add(lblIgnoreC);
 
@@ -1024,7 +1024,7 @@ public class ChartingFrame extends JFrame {
 			txtLastUpdated.setText(String.valueOf(charts.getCliDate()));
 			txtOccupation.setText(charts.getCliOccupation());
 			txtReferredBy.setText(String.valueOf(charts.getCliReferredBy()));
-			txtPhysician.setText(String.valueOf(charts.getCliPhysicianID()));
+			//txtPhysician.setText(String.valueOf(charts.getCliPhysicianID()));
 			txtpnAccidentsOrSurgeries.setText(charts.getCliAcdntSgrs());
 			txtpnAllergies.setText(charts.getCliAllergies());
 			txtpnConditions.setText(null);

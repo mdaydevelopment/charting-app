@@ -60,7 +60,7 @@ public class DBManager {
 				+ "WHERE cis.cinfo_id = mid.maxid) ci "
 			+ "ON c.client_id = ci.client_id "
 			+ "LEFT JOIN "
-				+ "(SELECT client_id, COUNT(*) totals, "
+				+ "(SELECT client_id, COUNT(session_id) totals, "
 					+ "SUM(paid) totalp, MAX(date) lasts "
 				+ "FROM session "
 				+ "GROUP BY client_id) s "
@@ -404,13 +404,14 @@ public class DBManager {
     public LinkedList<Session> getSessions(int cid) throws Exception {
         LinkedList<Session> list = new LinkedList<Session>();
         Session ns;
-        sql = "SELECT date, time, complaint, treatment, notes, minutes, paid "
+        sql = "SELECT session_id, date, time, complaint, treatment, notes, minutes, paid "
             + "FROM session "
             + "WHERE client_id = " + cid
             + " ORDER BY date";
         rs = stmt.executeQuery(sql);
         while (rs.next()) {
             ns = new Session(cid);
+            ns.setSessionID(rs.getInt("session_id"));
             ns.setDate(rs.getDate("date"));
             ns.setTime(rs.getString("time"));
             ns.setComplaint(rs.getString("complaint"));

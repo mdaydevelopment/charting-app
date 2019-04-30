@@ -929,6 +929,7 @@ public class ChartingInterface {
 	public void previousSession() {
 		if (sessionIterator.hasNext()) {
 			currentSession = sessionIterator.next();
+							System.out.println(currentSession.getSessionID());
 		}
 	}
 
