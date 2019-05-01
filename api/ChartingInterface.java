@@ -254,7 +254,8 @@ public class ChartingInterface {
 	/**
 	 * Generates a new call queue 
 	 */
-	public void getNewQueue() {
+	public void getNewQueue() throws Exception {
+		refreshArray();
 		callQueue = new PriorityQueue<ClientCard>();
 		ZoneId z = ZoneId.of("America/Chicago");
 		LocalDate todayCentral = LocalDate.now(z);
