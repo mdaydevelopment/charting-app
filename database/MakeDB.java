@@ -109,6 +109,15 @@ public class MakeDB {
                  +"INSERT INTO condition (condition) VALUES ('Stress');";
             stmt.executeUpdate(sql);
             System.out.println("Condition table populated.");
+            
+            sql = "INSERT INTO client (f_name, l_name, dob, referred_by, last_contact, ignore) "
+            	+ "VALUES ('YourName', 'Here', 0, NULL, 0, 0); "
+            	+ "INSERT INTO client_info (client_id, date) "
+            	+ "VALUES (1, 0);"
+            	+ "INSERT INTO session (client_id, date)"
+            	+ "VALUES (1, 0)";
+            stmt.executeUpdate(sql);
+            System.out.println("Seed data added.");
 
             stmt.close();
             c.close();
