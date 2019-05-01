@@ -255,7 +255,6 @@ public class ChartingInterface {
 	 * Generates a new call queue 
 	 */
 	public void getNewQueue() throws Exception {
-		refreshArray();
 		callQueue = new PriorityQueue<ClientCard>();
 		ZoneId z = ZoneId.of("America/Chicago");
 		LocalDate todayCentral = LocalDate.now(z);
@@ -284,6 +283,7 @@ public class ChartingInterface {
 	 * @throws Exception
 	 */
 	public void contactTop() throws Exception {
+		topCard.setLastContact(Date.valueOf(LocalDate.now()));
 		db.contactClient(topCard.getClientID());
 		topCard = callQueue.poll();
 	}
@@ -293,6 +293,7 @@ public class ChartingInterface {
 	 * @throws Exception
 	 */
 	public void ignoreTop() throws Exception {
+		topCard.setIgnore(true);
 		db.ignoreClient(topCard.getClientID());
 		topCard = callQueue.poll();
 	}
